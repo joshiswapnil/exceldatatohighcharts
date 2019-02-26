@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="css\main.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.7.7/xlsx.core.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+        <script>
+                $(document).ready(function(){
+                    $('[data-toggle="offcanvas"]').click(function(){
+                        $("#navigation").toggleClass("hidden-xs");
+                    });
+                 });
+                 </script>
+
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
+        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
+        <style type="text/css">
+
+            /* Keep the smaller device widths from breaking long 'categories' names by giving the chart more height at small widths */
+            @media (max-width: 551px) {
+                    #highchart_container {height: 3000px;}
+            }
+            @media (min-width: 550px) {
+                #highchart_container {height: 1400px;}
+            }
+            
+                    </style>
+<title>Dashboard</title>
+</head>
+
+<body class="home">
+        <script>
+                function handleFile(e) {
+                  var files = e.target.files;
+                  var TempoJSON;
+                  var i,f;
+                  for (i = 0, f = files[i]; i != files.length; ++i) {
+                    var reader = new FileReader();
+                    var name = f.name;
+                    reader.onload = function(e) {
+                      var data = e.target.result;
+              
+                      /* if binary string, read with type 'binary' */
+                      var result;
+                      var workbook = XLSX.read(data, {type: 'binary'});
+              
+                      /* DO SOMETHING WITH workbook HERE */
+                      workbook.SheetNames.forEach(function(sheetName) {
+                          var roa = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+                          if(roa.length > 0){
+                              result = roa;
+                              TempoJSON = roa;
+                          }
+                      });
+    //                  console.log(workbook);
+    //                  console.log(result);
+                      TempoJSON = result;
+                      prepareData(TempoJSON);
+                    };
+                    reader.readAsBinaryString(f);
+                  }			  
+                }
+              
+              
+               function prepareData(vJSON) {              
+                    var Categories = "";				
+                    var Monday ="";
+                    var Tuesday ="";
+                    var Wednesday ="";
+                    var Thursday ="";
+                    var Friday ="";
+                    var Week_Total ="";
+                  for (i = 0;i< vJSON.length; i++)
+                  {
+                  
+                        var aRow = vJSON[i];
+    
+                        if (aRow.C_PROJ_NAME == "Total")
+                        {
+                            console.log(aRow.C_PROJ_NAME);
+                            
+                            Categories = Categories + "||" + aRow.C_FULL_NAME;
+                            
+                            Monday = Monday + "||" + aRow.Monday;
+                            Tuesday = Tuesday + "||" + aRow.Tuesday;
+                            Wednesday = Wednesday + "||" + aRow.Wednesday;
+                            Thursday = Thursday + "||" + aRow.Thursday;
+                            Friday = Friday + "||" + aRow.Friday;
+                            Week_Total = Week_Total + "||" + aRow.Week_Total;
+                        }				
+                        
+                    };
+                    
+                    
+                    Categories = Categories.substr(-(Categories.length-2)) ;
+                    Monday = Monday.substr(-(Monday.length-2)) ;
+                    Tuesday = Tuesday.substr(-(Tuesday.length-2)) ;
+                    Wednesday = Wednesday.substr(-(Wednesday.length-2)) ;
+                    Thursday = Thursday.substr(-(Thursday.length-2)) ;
+                    Friday = Friday.substr(-(Friday.length-2)) ;
+                    Week_Total = Week_Total.substr(-(Week_Total.length-2)) ;
+    
+    
+                    
+                        console.log(Categories);
+                        console.log("Monday " + Monday);
+                        console.log("Tuesday" + Tuesday);
+                        console.log("Wednesday" + Wednesday);
+                        console.log("Thursday" + Thursday);
+                        console.log("Friday" + Friday);
+                        console.log("Week_Total" + Week_Total);
+                    //console.log(Categories);
+                
+                    
+                /*
+                    var uniqueListIndex=Categories.split(',').filter(function(currentItem,i,allItems){
+                    return (i == allItems.indexOf(currentItem));
+                    });
+    
+                    var uniqueList=uniqueListIndex.join(',');
+                    //console.log(uniqueList);
+                    
+                        var res = uniqueList.replace(/^,|,$/g, '');
+                        console.log(res);
+                    */
+    
+                    var ChartData = {
+        chart: {
+            type: 'column'
+        },
+        title: {
+            text: 'Tempo Report Resource Wise'
+        },
+        xAxis: {
+            categories: [],
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: 'Tempo Report Resource Wise'
+            }
+        },
+        tooltip: {
+            headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+            pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                '<td style="padding:0"><b>{point.y:.2f} hours</b></td></tr>',
+            footerFormat: '</table>',
+            shared: true,
+            useHTML: true
+        },
+        plotOptions: {
+            column: {
+                pointPadding: 0.2,
+                borderWidth: 0
+            },
+            series: {
+                    dataLabels: {
+                        enabled: true,
+                crop: false,
+                outside:true,
+                overflow: 'none'
+                }
+            }
+        },
+        credits: {
+            enabled: false
+        },
+        series: [{
+            name: 'Monday',
+            data: []
+    
+        }, {
+            name: 'Tuesday',
+            data: []
+    
+        }, {
+            name: 'Wednesday',
+            data: []
+    
+        }, {
+            name: 'Thursday',
+            data: []
+    
+        }, {
+            name: 'Friday',
+            data: []
+    
+        }]
+    };
+    
+        ChartData.xAxis.categories = Categories.split('||');
+        ChartData.series[0].data = Monday.split('||').map(Number);
+        ChartData.series[1].data = Tuesday.split('||').map(Number);
+        ChartData.series[2].data = Wednesday.split('||').map(Number);
+        ChartData.series[3].data = Thursday.split('||').map(Number);
+        ChartData.series[4].data = Friday.split('||').map(Number);
+       // ChartData.series[5].data = Week_Total.split('||').map(Number);
+        
+    
+        console.log(ChartData.xAxis.categories);
+        var names=ChartData.xAxis.categories;
+    console.log(names);
+    //var name1 = names.indexOf("Kumar, Vivek");
+    var name1 = names.includes("Kumar, Vivek");
+    if(name1==true){
+        console.log("ELOQUA");
+        
+
+    }
+
+    var name1=names.includes("Sheikh, Ashique")
+    if(name1==true){
+        console.log("ELOQUA");
+      
+    }
+    var name1=names.includes("Sharma, Romesh")
+    if(name1==true){
+        console.log("JITTERBIT");
+      
+        
+     
+    }
+
+    var name1=names.includes("Shrivastava, Nitin")
+    if(name1==true){
+        console.log("SUPPORT");
+   
+    }
+    var name1=names.includes("Adhallikar, Shruti")
+    if(name1==true){
+        console.log("SUPPORT");
+       
+    }
+    var name1=names.includes("Bhargawa, Vinayak")
+    if(name1==true){
+        console.log("ALTERYX");
+     
+    }
+    var name1=names.includes("Gupta, Shivang")
+    if(name1==true){
+        console.log("ALTERYX");
+    
+    }
+    var name1=names.includes("Gopalan, Harish")
+    if(name1==true){
+        console.log("PM");
+      
+    }
+    var name1=names.includes("Siddique, Kashan Jamal")
+    if(name1==true){
+        console.log("PM");
+        
+    }
+        console.log(ChartData.series);
+                    Highcharts.chart('container', ChartData);
+    
+                    }
+                
+                
+                /* set up drag-and-drop event */
+                $(document).ready(function(){
+                  $('#files').change(handleFile);
+                });
+                
+                
+                
+              </script>
+              
+              <script src="https://code.highcharts.com/highcharts.js">
+              </script>
+    <script src="https://code.highcharts.com/modules/exporting.js">
+    </script>
+    <script src="https://code.highcharts.com/modules/export-data.js">
+    </script>
+        <div class="container-fluid display-table">
+            <div class="row display-table-row">
+                <div class="col-md-2 col-sm-1 hidden-xs display-table-cell v-align box" id="navigation">
+                    <div class="logo">
+                        <a href="#"><img src="D:\Excel_Automation\dashboards\images\logo1.png" alt="logo" class="hidden-xs hidden-sm">
+                            <img src="D:\Excel_Automation\dashboards\images\logo1.png" alt="logo" class="visible-xs visible-sm circle-logo">
+                        </a>
+                    </div>
+                    <div class="navi">
+                        <ul>
+                            <li class="active"><a href="#"><i class="fa fa-home" aria-hidden="true"></i><span class="hidden-xs hidden-sm">Home</span></a></li>
+                            <li><a href="#"><i class="fa fa-tasks" aria-hidden="true"></i><span class="hidden-xs hidden-sm">Workflow</span></a></li>
+                            <li><a href="#"><i class="fa fa-bar-chart" aria-hidden="true"></i><span class="hidden-xs hidden-sm">Statistics</span></a></li>
+                            <li><a href="#"><i class="fa fa-users" aria-hidden="true"></i><span class="hidden-xs hidden-sm">Users</span></a></li>
+                            <li><a href="#"><i class="fa fa-calendar" aria-hidden="true"></i><span class="hidden-xs hidden-sm">Calendar</span></a></li>
+                            <li><a href="#"><i class="fa fa-cog" aria-hidden="true"></i><span class="hidden-xs hidden-sm">Settings</span></a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-10 col-sm-11 display-table-cell v-align">
+                    <!--<button type="button" class="slide-toggle">Slide Toggle</button> -->
+                    <div class="row">
+                        <header>
+                            <div class="col-md-7">
+                                <nav class="navbar-default pull-left">
+                                    <div class="navbar-header">
+                                        <button type="button" class="navbar-toggle collapsed" data-toggle="offcanvas" data-target="#side-menu" aria-expanded="false">
+                                            <span class="sr-only">Toggle navigation</span>
+                                            <span class="icon-bar"></span>
+                                            <span class="icon-bar"></span>
+                                            <span class="icon-bar"></span>
+                                        </button>
+                                    </div>
+                                </nav>
+                                <div class="search hidden-xs hidden-sm">
+                                    <input type="text" placeholder="Search" id="search">
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="header-rightside">
+                                    <ul class="list-inline header-top pull-right">
+                                          <li class="hidden-xs"><a href="#" class="add-project" data-toggle="modal" data-target="#add_project">Add Charts</a></li>
+                                        <li><a href="#"><i class="fa fa-envelope" aria-hidden="true"></i></a></li>
+                                        <li>
+                                            <a href="#" class="icon-info">
+                                                <i class="fa fa-bell" aria-hidden="true"></i>
+                                                <span class="label label-primary"></span>
+                                            </a>
+                                        </li>
+                                        <li class="dropdown">
+                                            <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i style="font-size:20px;" class="fa fa-user" aria-hidden="true"></i>
+                                                <b class="caret"></b></a>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <div class="navbar-content">
+                                                        <span>Swapnil Joshi</span>
+                                                        <p class="text-muted small">
+                                                            me@domain.com
+                                                        </p>
+                                                        <div class="divider">
+                                                        </div>
+                                                        <a href="#" class="view btn-sm active">View Profile</a>
+                                                    </div>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </header>
+                    </div>
+                    <div class="user-dashboard">
+                        <h1>Hello, Dashboard</h1>
+                        <br>
+                        <br>
+                        
+                        <div class="row">
+                            <center>
+                              <!--<input type="file" id="files" name="files"/>-->  
+                                <br>
+                        <br>
+                            </center>
+                                <div class="col-md-12" id="container">
+
+                                </div>		  
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+    
+        </div>
+    
+    
+    
+        <!-- Modal -->
+        <div id="add_project" class="modal fade" role="dialog">
+            <div class="modal-dialog">
+    
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header login-header">
+                        <button type="button" class="close" data-dismiss="modal">×</button>
+                        <h4 class="modal-title">Add Project</h4>
+                    </div>
+                    <div class="modal-body">
+                                <input type="text" placeholder="Project Title" name="name">
+                                <input type="text" placeholder="Post of Post" name="mail">
+                                <input type="text" placeholder="Author" name="passsword">
+                                <textarea placeholder="Desicrption"></textarea>
+                        </div>
+                    <div class="modal-footer">
+                            <button type="button" class="add-project" data-dismiss="modal">Save</button>
+                       <button type="button" class="cancel" data-dismiss="modal">Close</button>
+                       
+                        <input type="file" id="files" name="files"/>
+                    </div>
+                </div>
+    
+            </div>
+        </div>
+      
+    </body>
+
+</html>
